@@ -5,9 +5,11 @@ MODEL:
   group_norm_ch: 32
   ch_scalings: [1, 2, 4]
   t_dim: 256
-  T: 1000
-  beta_1: 0.0001
-  beta_T: 0.02
+NOISE:
+  kernel_size: 3
+  sigma: 1
+  sigma_increase: 0.01
+  T: 300
 DATA:
   dataset: MNISTDataset
   root_dir: "data/mnist"
