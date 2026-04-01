@@ -13,6 +13,7 @@ NOISE:
 DATA:
   dataset: MNISTDataset
   root_dir: "data/mnist"
+  channel_stats: "channel_stats.pt"
   batch_size: 128
   img_size: [1, 32, 32]
 MISC:

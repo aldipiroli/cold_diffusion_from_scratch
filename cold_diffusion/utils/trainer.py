@@ -9,28 +9,26 @@ from cold_diffusion.utils.trainer_base import TrainerBase
 class Trainer(TrainerBase):
     def __init__(self, config, logger):
         super().__init__(config, logger)
-        self.all_alpha_bar = utils.precompute_alpha_t(config).to(self.device)
-        self.scheaduler = utils.get_noise_scheduler(config).to(self.device)
 
     def train(self):
         self.logger.info("Started training..")
         start_epoch = self.epoch
         for epoch in range(start_epoch, self.config["OPTIM"]["num_epochs"]):
             self.epoch = epoch
-            self.evaluate_model()
             self.train_one_epoch()
+            self.evaluate_model()
             self.save_checkpoint(epoch)
 
-    def train_one_epoch(self, n_train_samples=100):
+    def train_one_epoch(self):
         self.model.train()
         pbar = tqdm(enumerate(self.train_loader), total=len(self.train_loader))
         for n_iter, x0 in pbar:
+            t = utils.get_random_t(self.config)
             x0 = x0.to(self.device)
-            x_noisy, eps_gt, t = utils.get_noisy_image(x0, self.all_alpha_bar)
-            eps_gt = eps_gt.to(self.device)
             t = t.to(self.device)
-            eps_pred = self.model(x_noisy, t)
-            loss, loss_dict = self.loss_fn(eps_pred, eps_gt)
+            x_noisy = utils.get_gaussian_blur_image(x0, t, self.config)
+            x_denoise = self.model(x_noisy, t)
+            loss, loss_dict = self.loss_fn(x_noisy, x_denoise)
             self.write_dict_to_tb(loss_dict, self.total_iters_train, prefix="train")
             self.optimizer.zero_grad()
             loss.backward()
@@ -50,7 +48,7 @@ class Trainer(TrainerBase):
     @torch.no_grad()
     def evaluate_model(self, plot_to_image=False):
         self.model.eval()
-        T = self.config["MODEL"]["T"]
+        T = self.config["NOISE"]["T"]
         num_samples = self.config["MISC"]["n_denoise_imgs"]
         for i in range(num_samples):
             xt = torch.randn(self.config["DATA"]["img_size"]).unsqueeze(0).to(self.device)
