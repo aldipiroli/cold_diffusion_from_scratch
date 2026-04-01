@@ -23,12 +23,12 @@ class Trainer(TrainerBase):
         self.model.train()
         pbar = tqdm(enumerate(self.train_loader), total=len(self.train_loader))
         for n_iter, x0 in pbar:
-            t = utils.get_random_t(self.config)
             x0 = x0.to(self.device)
+            t = utils.get_random_t(x0.shape[0], self.config)
             t = t.to(self.device)
-            x_noisy = utils.get_gaussian_blur_image(x0, t, self.config)
+            x_noisy = utils.get_batch_of_gaussian_blur_images(x0, t, self.config)
             x_denoise = self.model(x_noisy, t)
-            loss, loss_dict = self.loss_fn(x_noisy, x_denoise)
+            loss, loss_dict = self.loss_fn(x0, x_denoise)
             self.write_dict_to_tb(loss_dict, self.total_iters_train, prefix="train")
             self.optimizer.zero_grad()
             loss.backward()
@@ -53,7 +53,7 @@ class Trainer(TrainerBase):
         for i in range(num_samples):
             xt = utils.sample_from_gmm(self.train_dataset.channel_mean, self.train_dataset.channel_std, self.config)
             xt = xt.unsqueeze(0).to(self.device)
-            for t in tqdm(range(T - 1, 0, -1), desc=f"Sampling image {i+1}/{num_samples}"):
+            for t in tqdm(range(T, -1, -1), desc=f"Sampling image {i+1}/{num_samples}"):
                 t = torch.tensor(t).to(self.device)
                 x0_pred = self.model(xt, t)
                 xt = (

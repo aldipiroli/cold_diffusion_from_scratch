@@ -15,11 +15,11 @@ DATA:
   dataset: MNISTDataset
   root_dir: "data/mnist"
   channel_stats: "channel_stats.pt"
-  batch_size: 128
+  batch_size: 32
   img_size: [1, 32, 32]
 MISC:
   n_denoise_imgs: 1
-  plot_every_t_steps: 100
+  plot_every_t_steps: 30
 OPTIM:
   optimizer: "AdamW"
   lr: 0.0002
