@@ -9,6 +9,7 @@ NOISE:
   kernel_size: 3
   sigma: 1
   sigma_increase: 0.01
+  additional_noise_std: 0.002 
   T: 300
 DATA:
   dataset: CIFAR10Dataset

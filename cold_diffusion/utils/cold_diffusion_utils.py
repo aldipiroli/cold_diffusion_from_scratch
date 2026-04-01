@@ -25,4 +25,5 @@ def sample_from_gmm(mean, std, config):
     img_size = config["DATA"]["img_size"]
     colors = torch.normal(mean, std)
     xt = colors.reshape(img_size[0], 1, 1).expand(-1, img_size[1], img_size[2])  # C, H, W
+    xt += torch.randn_like(xt) * config["NOISE"]["additional_noise_std"]
     return xt
