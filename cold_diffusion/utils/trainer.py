@@ -15,8 +15,8 @@ class Trainer(TrainerBase):
         start_epoch = self.epoch
         for epoch in range(start_epoch, self.config["OPTIM"]["num_epochs"]):
             self.epoch = epoch
-            self.train_one_epoch()
             self.evaluate_model()
+            self.train_one_epoch()
             self.save_checkpoint(epoch)
 
     def train_one_epoch(self):
@@ -51,11 +51,16 @@ class Trainer(TrainerBase):
         T = self.config["NOISE"]["T"]
         num_samples = self.config["MISC"]["n_denoise_imgs"]
         for i in range(num_samples):
-            xt = torch.randn(self.config["DATA"]["img_size"]).unsqueeze(0).to(self.device)
-            for t in tqdm(range(T - 1, -1, -1), desc=f"Sampling image {i+1}/{num_samples}"):
-                t_tensor = torch.tensor(t, dtype=torch.long).unsqueeze(0).to(self.device)
-                pred_eps = self.model(xt, t_tensor)
-                xt = utils.denoise_image_step(xt, pred_eps, t_tensor, self.scheaduler, self.all_alpha_bar)
+            xt = utils.sample_from_gmm(self.train_dataset.channel_mean, self.train_dataset.channel_std, self.config)
+            xt = xt.unsqueeze(0).to(self.device)
+            for t in tqdm(range(T - 1, 0, -1), desc=f"Sampling image {i+1}/{num_samples}"):
+                t = torch.tensor(t).to(self.device)
+                x0_pred = self.model(xt, t)
+                xt = (
+                    xt
+                    - utils.get_gaussian_blur_image(x0_pred, t, self.config)
+                    + utils.get_gaussian_blur_image(x0_pred, t - 1, self.config)
+                )
                 if t % self.config["MISC"]["plot_every_t_steps"] == 0:
                     denoised_img = plot(
                         xt[0],
@@ -66,7 +71,6 @@ class Trainer(TrainerBase):
                         self.write_images_to_tb(
                             denoised_img, t, f"img/{str(self.total_iters_train).zfill(4)}/sample_{i}"
                         )
-
             self.logger.info(
                 f"[Sample {i}] Final xt stats -> t: {t}, mean: {xt.mean()}, min: {xt.min()}, max: {xt.max()}"
             )

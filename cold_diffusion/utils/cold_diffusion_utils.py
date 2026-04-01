@@ -13,7 +13,7 @@ def get_gaussian_blur_image(img, t, config):
     sigma = config["NOISE"]["sigma"]
     sigma_increase = config["NOISE"]["sigma_increase"]
     T = config["NOISE"]["T"]
-    assert t >= 0 and t <= T
+    assert t >= 0 and t <= T, f"t: {t}"
     sigma = sigma * torch.exp(sigma_increase * t)
     sigma = sigma.item()
     blurrer = v2.GaussianBlur(kernel_size=(kernel_size, kernel_size), sigma=(sigma, sigma))
@@ -25,5 +25,5 @@ def sample_from_gmm(mean, std, config):
     img_size = config["DATA"]["img_size"]
     colors = torch.normal(mean, std)
     xt = colors.reshape(img_size[0], 1, 1).expand(-1, img_size[1], img_size[2])  # C, H, W
-    xt += torch.randn_like(xt) * config["NOISE"]["additional_noise_std"]
+    xt = xt + torch.randn_like(xt) * config["NOISE"]["additional_noise_std"]
     return xt
