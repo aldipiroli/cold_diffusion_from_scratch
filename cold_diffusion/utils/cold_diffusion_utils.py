@@ -24,7 +24,7 @@ def get_gaussian_blur_image(img, t, config):
     kernel_size = config["NOISE"]["kernel_size"]
     sigma = config["NOISE"]["sigma"]
     sigma_increase = config["NOISE"]["sigma_increase"]
-    sigma = sigma * torch.exp(sigma_increase * t)
+    sigma = sigma + sigma_increase * t
     sigma = sigma.item()
     blurrer = v2.GaussianBlur(kernel_size=(kernel_size, kernel_size), sigma=(sigma, sigma))
     img_blurred = blurrer(img)

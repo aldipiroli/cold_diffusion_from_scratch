@@ -53,8 +53,8 @@ class Trainer(TrainerBase):
         for i in range(num_samples):
             xt = utils.sample_from_gmm(self.train_dataset.channel_mean, self.train_dataset.channel_std, self.config)
             xt = xt.unsqueeze(0).to(self.device)
-            for t in tqdm(range(T, -1, -1), desc=f"Sampling image {i+1}/{num_samples}"):
-                t = torch.tensor(t).to(self.device)
+            for t in tqdm(range(T - 1, -1, -1), desc=f"Sampling image {i+1}/{num_samples}"):
+                t = torch.tensor(t).reshape(1, -1).to(self.device)
                 x0_pred = self.model(xt, t)
                 xt = (
                     xt
