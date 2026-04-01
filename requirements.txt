@@ -1,0 +1,9 @@
+torch
+torchvision
+numpy
+matplotlib
+tqdm
+pyyaml
+tensorboard
+h5py
+pytest
