@@ -20,6 +20,7 @@ class DatasetBaseClass(Dataset):
             stats = torch.load(self.dataset_stats_path)
             self.channel_mean = stats["channel_mean"]
             self.channel_std = stats["channel_std"]
+            self.logger.info(f"Channel mean: {self.channel_mean}, std: {self.channel_std}")
         else:
             self.compute_channel_stats()
 

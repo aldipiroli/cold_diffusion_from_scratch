@@ -3,9 +3,10 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
+import pytest
 import torch
 
-from cold_diffusion.utils.cold_diffusion_utils import get_gaussian_blur_image, get_random_t
+from cold_diffusion.utils.cold_diffusion_utils import get_gaussian_blur_image, get_random_t, sample_from_gmm
 from cold_diffusion.utils.misc import load_config
 
 
@@ -24,3 +25,17 @@ def test_get_gaussian_blur_image():
     t = get_random_t(config)
     img_blurred = get_gaussian_blur_image(img, t, config)
     assert img_blurred.shape == img.shape
+
+
+@pytest.mark.parametrize(
+    "mean, std, config_name",
+    [
+        (torch.tensor([0.1]), torch.tensor([0.1]), "mnist_config.yaml"),
+        (torch.tensor([0.1, 0.1, 0.1]), torch.tensor([0.1, 0.1, 0.1]), "cifar10_config.yaml"),
+    ],
+)
+def test_sample_from_gmm(mean, std, config_name):
+    config = load_config(f"cold_diffusion/config/{config_name}")
+    img_size = config["DATA"]["img_size"]
+    xt = sample_from_gmm(mean, std, config)
+    assert list(xt.shape) == img_size
