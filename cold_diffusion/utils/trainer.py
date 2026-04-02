@@ -1,3 +1,5 @@
+import random
+
 import torch
 from tqdm import tqdm
 
@@ -51,9 +53,8 @@ class Trainer(TrainerBase):
         T = self.config["NOISE"]["T"]
         num_samples = self.config["MISC"]["n_denoise_imgs"]
         for i in range(num_samples):
-            xt = utils.sample_from_gmm(self.train_dataset.channel_mean, self.train_dataset.channel_std, self.config)
-            xt = xt.unsqueeze(0).to(self.device)
-            for t in tqdm(range(T - 1, -1, -1), desc=f"Sampling image {i+1}/{num_samples}"):
+            xt = self.get_initial_sample()
+            for t in tqdm(range(T, -1, -1), desc=f"Sampling image {i+1}/{num_samples}"):
                 t = torch.tensor(t).reshape(1, -1).to(self.device)
                 x0_pred = self.model(xt, t)
                 xt = (
@@ -74,3 +75,13 @@ class Trainer(TrainerBase):
             self.logger.info(
                 f"[Sample {i}] Final xt stats -> t: {t}, mean: {xt.mean()}, min: {xt.min()}, max: {xt.max()}"
             )
+
+    def get_initial_sample(self, use_gmm_sample=False):
+        if use_gmm_sample:
+            xt = utils.sample_from_gmm(self.train_dataset.channel_mean, self.train_dataset.channel_std, self.config)
+        else:
+            idx = random.randint(0, len(self.val_dataset) - 1)
+            xt = self.val_dataset[idx]
+        xt = utils.get_gaussian_blur_image(xt, torch.tensor(self.config["NOISE"]["T"]), self.config)
+        xt = xt.unsqueeze(0).to(self.device)
+        return xt

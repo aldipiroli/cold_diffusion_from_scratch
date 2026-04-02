@@ -13,6 +13,7 @@ from cold_diffusion.utils.cold_diffusion_utils import (
     sample_from_gmm,
 )
 from cold_diffusion.utils.misc import load_config
+from cold_diffusion.utils.plotters import plot
 
 
 def test_get_random_t():
@@ -56,3 +57,15 @@ def test_sample_from_gmm(mean, std, config_name):
     img_size = config["DATA"]["img_size"]
     xt = sample_from_gmm(mean, std, config)
     assert list(xt.shape) == img_size
+
+
+@pytest.mark.skip()
+def test_get_gaussian_blur_img_output():
+    config = load_config("cold_diffusion/config/mnist_config.yaml")
+    img_size = config["DATA"]["img_size"]
+    B, C, H, W = 1, img_size[0], img_size[1], img_size[2]
+    img = torch.randn(B, C, H, W)
+    for t in range(0, 300, 30):
+        t = torch.tensor(t)
+        img_blurred = get_gaussian_blur_image(img, t, config)
+        plot(img_blurred, f"tmp/img_{str(t.item()).zfill(3)}.png", save_figure=True)

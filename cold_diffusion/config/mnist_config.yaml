@@ -6,10 +6,10 @@ MODEL:
   ch_scalings: [1, 2, 4]
   t_dim: 256
 NOISE:
-  kernel_size: 7
-  sigma: 0.5
-  sigma_increase: 0.03
-  additional_noise_std: 0.002 
+  kernel_size: 27
+  sigma: 1
+  sigma_increase: 0.05
+  additional_noise_std: 0.002
   T: 300
 DATA:
   dataset: MNISTDataset
