@@ -21,7 +21,7 @@ def plot_img(ax, img, normalize=True):
     if img.shape[0] == 1:
         img = img.squeeze()
 
-    ax.imshow(img, interpolation="nearest", cmap="plasma")
+    ax.imshow(img, interpolation="nearest", cmap="cividis")
     ax.axis("off")
 
 

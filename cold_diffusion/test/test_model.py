@@ -112,7 +112,7 @@ def test_time_pos_encoder():
     config = load_config("cold_diffusion/config/mnist_config.yaml")
     time_encoder = TimePosEncoder(config)
     t_dim = config["MODEL"]["t_dim"]
-    T = config["MODEL"]["T"]
+    T = config["NOISE"]["T"]
     B = 2
     time = torch.randint(0, T, (B, 1))
     enc_time = time_encoder(time)

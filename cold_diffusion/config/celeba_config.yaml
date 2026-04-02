@@ -1,0 +1,35 @@
+ARTIFACTS_DIR: "artifacts"
+MODEL:
+  in_ch: 3
+  base_ch: 64
+  group_norm_ch: 32
+  ch_scalings: [1, 2, 4]
+  t_dim: 256
+NOISE:
+  kernel_size: 27
+  sigma: 1
+  sigma_increase: 0.05
+  additional_noise_std: 0.002
+  T: 300
+DATA:
+  dataset: CelebADataset
+  root_dir: "data/celeba/"
+  channel_stats: "channel_stats.pt"
+  batch_size: 32
+  img_size: [3, 64, 64]
+MISC:
+  n_denoise_imgs: 1
+  plot_every_t_steps: 30
+OPTIM:
+  optimizer: "AdamW"
+  lr: 0.0002
+  accumulate_gradient: False
+  accumulate_gradient_iters: 8
+  num_epochs: 100
+  max_eval_iters: 25
+  save_ckpt_every: 1
+  eval_every: 1
+  gradient_clip: null
+  scheduler: "cosine"
+  T_max: 100
+  eta_min: 0.00001

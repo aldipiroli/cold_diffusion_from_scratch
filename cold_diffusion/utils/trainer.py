@@ -53,7 +53,8 @@ class Trainer(TrainerBase):
         T = self.config["NOISE"]["T"]
         num_samples = self.config["MISC"]["n_denoise_imgs"]
         for i in range(num_samples):
-            xt = self.get_initial_sample()
+            xt, idx = self.get_initial_sample()
+            self.save_initial_seed(idx, i)
             for t in tqdm(range(T, -1, -1), desc=f"Sampling image {i+1}/{num_samples}"):
                 t = torch.tensor(t).reshape(1, -1).to(self.device)
                 x0_pred = self.model(xt, t)
@@ -66,7 +67,7 @@ class Trainer(TrainerBase):
                     denoised_img = plot(
                         xt[0],
                         save_figure=plot_to_image,
-                        output_path=f"{self.config['IMG_OUT_DIR']}/{str(i).zfill(4)}/{str(t).zfill(5)}.png",
+                        output_path=f"{self.config['IMG_OUT_DIR']}/{str(i).zfill(4)}/sampled_{str(t.item()).zfill(5)}.png",
                     )
                     if not plot_to_image:
                         self.write_images_to_tb(
@@ -84,4 +85,15 @@ class Trainer(TrainerBase):
             xt = self.val_dataset[idx]
         xt = utils.get_gaussian_blur_image(xt, torch.tensor(self.config["NOISE"]["T"]), self.config)
         xt = xt.unsqueeze(0).to(self.device)
-        return xt
+        return xt, idx
+
+    def save_initial_seed(self, idx, i):
+        for t in range(300):
+            if t % self.config["MISC"]["plot_every_t_steps"] == 0:
+                xt = self.val_dataset[idx]
+                xt = utils.get_gaussian_blur_image(xt, torch.tensor(t), self.config)
+                plot(
+                    xt[0],
+                    save_figure=True,
+                    output_path=f"{self.config['IMG_OUT_DIR']}/{str(i).zfill(4)}/original_{str(t).zfill(5)}.png",
+                )
